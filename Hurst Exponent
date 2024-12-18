@@ -100,6 +100,6 @@ hurstexp_smooth = ta.ema(hurstexp, smooth_len)
 
 plot(hurstexp, color = color.new(color.green, 0), linewidth = 2, title = 'HurstExp')
 plot(show_smooth ? hurstexp_smooth : na, color = color.new(color.red, 0), linewidth = 2, title = 'HurstSmooth')
-hline(0.7, 'Midline', color = color.red, linestyle = hline.style_dotted)
-hline(0.5, 'Midline', color = color.gray, linestyle = hline.style_dotted)
 hline(0.3, 'Midline', color = color.yellow, linestyle = hline.style_dotted)
+hline(0.5, 'Midline', color = color.gray, linestyle = hline.style_dotted)
+hline(0.7, 'Midline', color = color.orange, linestyle = hline.style_dotted)
