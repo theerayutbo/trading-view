@@ -1,0 +1,57 @@
+//@version=6
+indicator("Power Law Regression with SD (v6)", overlay=false)
+
+// Input Parameters
+length = input.int(50, title="Number of Bars", minval=2) // Number of bars to calculate
+log_x = array.new_float(length) // Prepare x data (time) in logarithmic scale
+log_y = array.new_float(length) // Prepare y data (price) in logarithmic scale
+
+// Generate log(x) and log(y) data
+for i = 0 to length - 1
+    array.set(log_x, i, math.log(i + 1)) // log of bar index (1 to n)
+    array.set(log_y, i, math.log(close[length - i - 1])) // log of the closing price (recent to oldest)
+
+// Calculate sums for regression
+float sum_x = 0
+float sum_y = 0
+float sum_x2 = 0
+float sum_xy = 0
+
+for i = 0 to length - 1
+    x_val = array.get(log_x, i)
+    y_val = array.get(log_y, i)
+    sum_x += x_val
+    sum_y += y_val
+    sum_x2 += x_val * x_val
+    sum_xy += x_val * y_val
+
+// Calculate Slope (b) and Intercept (log(a))
+b = (length * sum_xy - sum_x * sum_y) / (length * sum_x2 - math.pow(sum_x, 2))
+log_a = (sum_y - b * sum_x) / length
+
+// Calculate Power Law Line and Predicted Prices
+power_law_line = math.exp(log_a) * math.pow(close[0], b)
+
+// Calculate predicted values for all bars
+predicted_prices = array.new_float(length)
+for i = 0 to length - 1
+    x_val = array.get(log_x, i)
+    predicted_value = math.exp(log_a) * math.pow(math.exp(x_val), b) // y = a * x^b
+    array.set(predicted_prices, i, predicted_value)
+
+// Calculate Standard Deviation (SD)
+float sum_squared_diff = 0
+for i = 0 to length - 1
+    actual_price = close[length - i - 1]
+    predicted_price = array.get(predicted_prices, i)
+    diff = actual_price - predicted_price
+    sum_squared_diff += diff * diff
+
+sd = math.sqrt(sum_squared_diff / length)
+
+// Plot Power Law Line
+plot(power_law_line, color=color.blue, title="Power Law Line")
+
+// Plot SD Bands (Upper and Lower)
+plot(power_law_line + sd, color=color.green, title="Upper Band (+SD)")
+plot(power_law_line - sd, color=color.red, title="Lower Band (-SD)")
